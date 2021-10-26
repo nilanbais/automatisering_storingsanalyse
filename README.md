@@ -2,68 +2,53 @@
 A repo dedicated to the development of a Notebook that generates the storingsanalyses done by the maintenance engineers.
 
 This documentation also contains the a description of the MetadataStoringsAnalyse class that is used in calculating 
-the results for the rapport. It gives an overview of the modules and attrubutes of the class and example of the usage 
-of these modules and attributes.
+the results for the rapport. It gives an overview of the methods and attrubutes of the class and example of the usage 
+of these methods and attributes.
 
 # Project specific metadata
 To grant the ability to analyse historical data of a given project, a new object needed to be designed. This object is 
 build as presented bellow.
 ```
 {
-    "project": projectnaam,
-    "start_datum": f"{maand}_{jaar}",
-    "contract_info": {
-        "tijdsregistratie": True,
-        ...,
-        "aanwezige_deelinstallaties": [lijst met aanwezige deelinstallaties op het project]
+    project: projectnaam,
+    start_datum: dd-mm-yyy,
+    contract_info: {
+        tijdsregistratie: True,
+        ...
+        aanwezige_deelinstallaties: [Lijst DI_nummers],
+        POO_codes: [Lijst POO codes]
     },
-    "poo_codes": {
-        "probleem": {
-            f"{maand}_{jaar}": {
-                code: aantal meldingen,
-                ...,
-                "Leeg": aantal meldingen
-            },
-            f"{maand}_{jaar}": {
-                ...
-            },
+    poo_codes: {
+        probleem: {
+            "{kwartaal}_{jaar}": {
+                POO_code: aantal meldingen,
+                POO_code: aantal meldingen,
+            }
         },
-        "oorzaak": {
-            f"{maand}_{jaar}": {
-                code: aantal meldingen,
-                ...,
-                "Leeg": aantal meldingen
-            },
-            f"{maand}_{jaar}": {
-                ...
-            },
+        oorzaak: {
+                [structuur als in probleem]
+            }
         },
-        "oplossing": {
-            f"{maand}_{jaar}": {
-                code: aantal meldingen,
-                ...,
-                "Leeg": aantal meldingen
-            },
-            f"{maand}_{jaar}": {
-                ...
-            },
-        },
+        oplossing: {
+                [structuur als in probleem]
+            }
+        }
     },
-    "meldingen": {
-        f"{maand}_{jaar}": {
+    meldingen: {
+        "{maand}_{jaar}": {
             DI_num: aantal meldingen,
             DI_num: aantal meldingen
         }
-        f"{maand}_{jaar}": {
+        "{maand}_{jaar}": {
             ...
         }
     },
-    "storingen": {
-        f"{maand}_{jaar}": {
+    storingen: {
+        "{maand}_{jaar}": {
             DI_num: aantal storingen,
             DI_num: aantal storingen
         }
-        f"{maand}_{jaar}": {
+        "{maand}_{jaar}": {
             ...
         }
     }
@@ -72,7 +57,7 @@ build as presented bellow.
 ---
 ---
 # Classes
-The backend is build using different Python classes, all dedicated to fulfill a specific piece of the process. These classes are summarized bellow and will be explained after that. In this explenation the focus will stay on the endpoints of the classes. Protected attributes and modules will only be explained when this is necessary.
+The backend is build using different Python classes, all dedicated to fulfill a specific piece of the process. These classes are summarized bellow and will be explained after that. In this explenation the focus will stay on the endpoints of the classes. Protected attributes and methods will only be explained when this is necessary.
 
 |Class|Toepassing|
 |-----|----------|
@@ -81,6 +66,7 @@ The backend is build using different Python classes, all dedicated to fulfill a 
 |PrepNPlot|Python Class used for the preparation and plotting of the project specific data.|
 |StagingFileBuilder|Python Class focussed on builing and saving a staging file in which the maintenance engineers can specify the category to which a notification belongs.|
 |StoringsAnalyse|Python Class that combines the functionalities of the other classes that need to be applied and makes them available in the User Interface (Jupyter Notebook).|
+|DocumentGenerator|Pyhon Class for generating the documentens (text + appendix).|
 
 ---
 # Class QueryMaximoDatabase
@@ -97,7 +83,7 @@ qmdb = QueryMaximoDatabase(api_key)
 ## Class variables
 A class variable is a variable defined inside a class. When making a new instance of this class, this new instance will also contain this variable.
 
-- **_default_file_name** - The file name is build up like: date_hours_minutes_query_response_data.json, where date, hours, and minutes are substituted with the date and time of the moment the variable is used.
+This class doesn't contain any class variables.
 
 ## Class attributes
 
@@ -109,8 +95,8 @@ A class variable is a variable defined inside a class. When making a new instanc
 - *qmdb*.url_parameters - a dictionary containing the url parameters used in querying the database.
 - *qmdb*.headers - a dictionary containing the header data used in querying the database
 
-## Class modules
-### *qmdb*._get_response(query=None) - *protected module*
+## Class methods
+### *qmdb*._get_response(query=None) - *protected method*
 Sends a request to the database to get a response payload. If the parameter is None, it looks at the internal qmdb.query attribute to use as query.
 
 #### Parameters
@@ -129,23 +115,23 @@ Functionality of the *qmdb*.get_response(), but extended with the isolation of t
 - **filename** - A string to specify a filename when saving the data (default=_default_file_name).
 - **query** - A string containing the query that needs to be send to the database (default = None).
 ---
-### *qmdb*._set_site_id(site_id) - *protected module*
-Protected module to create the possibility of setting the site id class attribute after initializing the class-instance. It returns nothing.
+### *qmdb*.set_site_id(site_id) - *protected method*
+Protected method to create the possibility of setting the site id class attribute after initializing the class-instance. It returns nothing.
 
 #### Parameters
 - **site_id** - The site_id you want to set as *qmdb*.site_id.
 ---
-### *qmdb*._set_object_structure(object_structure='MXWO_SND')
-Protected module to create the possibility of setting the object structure class attribute after initializing the class-instance. It returns nothing.
+### *qmdb*.set_object_structure(object_structure='MXWO_SND')
+Protected method to create the possibility of setting the object structure class attribute after initializing the class-instance. It returns nothing.
 
-This module is executed at initialization of the class instance to set the default value as the object structure.
+This method is executed at initialization of the class instance to set the default value as the object structure.
 
 #### Parameters
 - **object_structure** - The object_structure you want to set as *qmdb*.object_structure (default = 'MXWO_SND').
 ---
 ---
 # Class MetadataStoringsAnalyse
-MetadataStoringsAnalyses supplies modules for manipulating the metadata that is used in the storingsanalyses.
+MetadataStoringsAnalyses supplies methods for manipulating the metadata that is used in the storingsanalyses.
 
 ## Initializing a new instance of the class
 ```
@@ -157,16 +143,19 @@ metadata = MetadataStoringsAnalyse(project)
 A class variable is a variable defined inside a class. When making a new instance of this class, this new instance will also contain this variable.
 
 - **_filepath_dict** - A dictionary with key: value pairs like {*project name*: *filename metafile of given project*}.
+- **_quarters** - A dictionary with key: value pairs like {*quarter name*: *list of corresponding months*}.
 
 ## Class attributes
 - *metadata*.filepath - The filepath of the file. Based on the project name that is parsed when initializing a class instance the filepath can be extracted.
-- *metadata*.filename - The name of the file. Set in the same process as *metadata*.filepath (set by a protected module of the class)
 - *metadata*.tijdsregistratie - Information extracted from the contract_info object in the metadata.
+- *metadata*._quarter - Internal storage for remembering the quarter of the analysis that is being executed.
+- *metadata*._year - Internal storage for remembering the year of the analysis that is being executed.
+- *metadata*.unsaved_updated_meta - space to hold the updated metadata before it is saved to longtime storage.
     
-## Class modules
-All the module names are presented with an instance of the class named *metadata*. 
+## Class methods
+All the method names are presented with an instance of the class named *metadata*. 
 
-Only the usable endpoints will be explained in this documentation. The private modules aren't going to be explained.
+Only the usable endpoints will be explained in this documentation. The private methods aren't going to be explained.
 
 ---
 ### *metadata*.get_all_data()
@@ -213,10 +202,31 @@ Returns the storingen object as included in the metadata object.
 {
     f"{maand}_{jaar}": {
         DI_num: aantal storingen,
-        DI_num: aantal storinge
+        DI_num: aantal storingen
     }
     f"{maand}_{jaar}": {
         ...
+    }
+}
+```
+---
+### *metadata*.poo_data()
+Returns the poo_codes object as included in the metadata object.
+```
+{
+    probleem: {
+        "{kwartaal}_{jaar}": {
+            POO_code: aantal meldingen,
+            POO_code: aantal meldingen,
+        }
+    },
+    oorzaak: {
+            [structuur als in probleem]
+        }
+    },
+    oplossing: {
+            [structuur als in probleem]
+        }
     }
 }
 ```
@@ -229,14 +239,14 @@ Returns a filtered dictionary, only containing specified subsystem numbers.
 - **notification_type** - a specification of the dictionary that needs to be filtered ('meldngen' or 'storingen', default = 'meldingen').
 ---
 ### *metadata*.sum_values(dictionary, keys=None)
-Sums up the values of a dictionary. If a dictionary of dictionaries is given, the module will continue to sum up all the values of the underlying dictionaries.
+Sums up the values of a dictionary. If a dictionary of dictionaries is given, the method will continue to sum up all the values of the underlying dictionaries.
 
 #### Parameters
 - **dictionary** - a dictionary of which the values need to be summed.
 - **keys** - one key, or a list of specific keys of which the values need to be summed (default = None).
 ---
 ### *metadata*.count_values(dictionary, keys=None)
-Counts the values of a dictionary. If a dictionary of dictionaries is given, the module will continue to count all the values of the underlying dictionaries.
+Counts the values of a dictionary. If a dictionary of dictionaries is given, the method will continue to count all the values of the underlying dictionaries.
 
 #### Parameters
 - **dictionary** - a dictionary of which the values need to be counted.
@@ -249,6 +259,12 @@ Returns the calculated monthly average of the values of the dictionary.
 - **dictionary** - a dictionary of which the monthly average needs to be calculated.
 - **keys** - one key, or a list of specific keys which need to be taken into account when calculating the monthly average (default = None).
 ---
+### *metadata*.avg_quarterly(dictionary)
+Returns the calculated quarterly average of the values of the dictionary.
+
+#### Parameters
+- **dictionary** - a dictionary of which the quarterly average needs to be calculated.
+---
 ### *metadata*.avg_yearly(dictionary, exclude_year=None)
 Returns the calculated yearly average of the values of the dictionary.
 
@@ -256,22 +272,98 @@ Returns the calculated yearly average of the values of the dictionary.
 - **dictionary** - a dictionary of which the monthly average needs to be calculated.
 - **exclude_year** - one year, or a list of years that need to be excluded from the calculation (default = None).
 ---
-### *metadata*.get_month_list(notification_type='meldingen', exclude_month=None, exclude_year=None)
+### *metadata*.get_month_list(notification_type='meldingen', exclude_month=None, exclude_quarter=None, exclude_year=None)
 Returns a list of all the keys of a given dictionary that do not contain the specified months or years that need to be excluded.
 
 #### Parameters
 - **notification_type** - a specification of the dictionary that needs to be filtered ('meldngen' or 'storingen', default = 'meldingen').
 - **exclude_month** - one month, or a list of months that need to be excluded (default = None).
+- **exclude_quarter** - one quarter, or a list of quarters that need to be excluded (default = None).  
 - **exclude_year** - one year, or a list of years that need to be excluded (default = None).
+---
+### *metadata*.filter_dictionary_keys(dictionary, keys)
+Returns a dict filtered to only contain the specified keys.
+
+#### Parameters
+- **dictionary** - the dictionary that needs to be filtered.
+- **keys** - the specified keys on which the dictionary needs to be filtered.
+---
+### *metadata*._quarter_to_month_number(quarters)
+Returns a list containing the months corresponding to the given quarters.
+
+#### Parameters
+- **quarters** - a quarter, or a list of quarters of which the corresponding months need to be returned.
+---
+### *metadata*._order_frequency_table(freq_table)
+Returns an ordered dict, ordered by the size of the values in the dictionary.
+
+#### Parameters
+- **freq_table** - the frequency_table that needs to be ordered.
+---
+### *metadata*.make_ddict_frequency_table(dictionary)
+Returns a frequency table of the values of the input dictionary.
+
+#### Parameters
+- **dictionary** - the input dictionary of which a frrequency table is made.
+---
+### *metadata*.poo_avg_table(poo_dictionary, poo_type)
+Return returns a table with the averages of the frequencies of the POO codes.
+
+#### Parameters
+- **poo_dictionary** - the full dictionary corresponding to a poo_type in the matadata object.
+- **poo_types** - one of the poo_types (probleem, oorzaak, oplossing) of which the averages table needs to be created.
+---
+### *metadata*.return_poo_type_string(poo_type)
+Returns the poo_type string 'probleem code', 'oorzaak code', or 'oplossing code' based on the poo_type.
+
+#### Parameters
+- **poo_type** - one of the poo_types (probleem, oorzaak, oplossing).
+---
+### *metadata*.return_poo_code_letter(poo_type)
+Returns the poo_type letter 'P', 'C', or 'S' based on the poo_type.
+
+#### Parameters
+- **poo_type** - one of the poo_types (probleem, oorzaak, oplossing).
+---
+### *metadata*.return_poo_code_list(poo_type)
+Returns all the available codes corresponding to a poo_type.
+
+#### Parameters
+- **poo_type** - one of the poo_types (probleem, oorzaak, oplossing).
+---
+### *metadata*.return_ntype_meta_object(ntype)
+Returns a dictionary containing only the specified notification type (ntype).
+
+#### Parameters
+- **ntype** - the notification type (available ntypes in the method are: 'meldingen' and 'storingen')
+---
+### *metadata*.update_poo_data(staging_file_data)
+Returns a dictionary that is extended with the new prepared poo data extracted from the database in the process of building the analysis.
+
+#### Parameters
+- **staging_file_data** - a pandas.DataFrame containing the prepared data for the analysis.
+---
+### *metadata*.update_ntype_data(staging_file_data, ntype)
+Returns a dictionary that is extended with the new prepared notification type data extracted from the database in the process of building the analysis.
+
+#### Parameters
+- **staging_file_data** - a pandas.DataFrame containing the prepared data for the analysis.
+- **ntype** - the notification type (available ntypes in the method are: 'meldingen' and 'storingen')
+---
+### *metadta*.update_meta(staging_file_data)
+Method that updates the poo data, meldingen and storingen, and saves the result in the attribute *metadta*.unsaved_updated_meta.
+
+#### Parameters
+- **staging_file_data** - a pandas.DataFrame containing the prepared data for the analysis.
 ---
 ---
 # Class PrepNPlot
-PrepNPlot contains modules for the preparation and plotting of the data obtained from the metadata.
+PrepNPlot contains methods for the preparation and plotting of the data obtained from the metadata.
 
 ## Initializing a new instance of the class
 The methode of initializing a new class instance, as shown bellow, can be used with this class but it isn't necessary. 
 Because of the way the StoringsAnalyse-class is build, a new instance of StoringsAnalyse inherits the attributes and 
-modules from PrepNPlot. This makes these attributes and modules available as if they are part of the StoringsAnalyse-class.
+methods from PrepNPlot. This makes these attributes and methods available as if they are part of the StoringsAnalyse-class.
 
 ```
 from prepnplot import PrepNPlot
@@ -289,7 +381,7 @@ A class variable is a variable defined inside a class. When making a new instanc
 - *pp*.last_seen_bin_names - used to cashe the bin_names. Also makes it available to use this data outside of the class-instance.
 - *pp*.quarter_sequence - A LinkedList that is used to return the previous or upcoming quarter. 
 
-## Class modules
+## Class methods
 ### *pp*.replace_seperator(string, inserting_seperator='-')
 Returns the string were the seperator is substituted with the given seperator.
 
@@ -324,6 +416,12 @@ Returns a list with all the months between the start and end of the input time r
 ### *pp*._months_in_year_bin()
 Returns a set of the months, build from the values of the _quarters dictionary.
 
+---
+### *pp*._month_num_to_name(month_num)
+Returns the writen out month name of the corresonding month number.
+
+#### Parameters
+- **monnth_num** - A single month number, or a list of month numbers.
 ---
 ### *pp*.prettify_time_label(label)
 Returns a prettified string in which the separator is removed and the month number is substituted for the
@@ -454,14 +552,28 @@ returns data stucture:
 - **bin_names** - List with the unique main level values.
 ---
 ### *pp*._prep_end_step_summary(input_dict)
-Module that counts the times a value has been seen in a bin. 
+Method that counts the times a value has been seen in a bin. 
 
 #### Parameters
 - **input_dict** - The input dictionary (result of *pp*._prep_second_step()).
+---
+### *pp*.filter_prep_output(list_of_lists, available_categories)
+This method filers the prep_output to return a modified copy of the list_of_lists (LOL) and the list of
+corresponding available categories, where all the categories of which all the values in the LOL are '0'
+are filtered out. Both the objects NEED TO BE sorted and stay in that order.
 
+IMPORTANT
+
+The list with the available categories needs to be sorted. The function build_output_first_step takes
+the available categories and sorts them when using them. This means that the list of lists created is
+in the order of the sorted available categories.
+
+#### Parameters
+- **list_of_lists** - the list of lists to the values corresponding to the available categories.
+- **available_categories** - a list of all the available categories in the list_of_lists.
 ---
 ### *pp*.prep(input_object, time_range, available_categories, category_key=None, time_key=None, bin_size=False)
-Module that combines the different preparation stages described above, with *pp*._prep_end_step() as last module applied
+Method that combines the different preparation stages described above, with *pp*._prep_end_step() as last method applied
 
 In case of parsing a pandas.DataFrame() it is necessary to parse a time_key and a category_key.
 
@@ -504,7 +616,7 @@ Takes the result of *pp*.prep_summary(), plots it, and returns a Figure object.
 ---
 ---
 # Class StagingFileBuilder
-MetadataStoringsAnalyses supplies modules for manipulating the metadata that is used in the storingsanalyses.
+MetadataStoringsAnalyses supplies methods for manipulating the metadata that is used in the storingsanalyses.
 
 ## Initializing a new instance of the class
 ```
@@ -527,9 +639,9 @@ A class variable is a variable defined inside a class. When making a new instanc
 - *sfb*.workorder - pandas.DataFrame() that contains the workorder related data
 - *sfb*.df_staging_file - pandas.DataFrame() that contains the result of merging the *sfb*.asset_df and *sfb*.workorder. 
 
-## Class modules
+## Class methods
 ### *sfb*.read_sf_data()
-Module for reading the data from the input file and returning this data.
+Method for reading the data from the input file and returning this data.
 
 ---
 ### *sfb*.get_breakdown_descriptions(sbs_lbs_series)
@@ -551,7 +663,7 @@ Saves the pandas.DataFrame() stored as *sfb*.df_staging_file to a file with the 
 
 ---
 ### *sfb*.build_staging_file()
-Combines the main functionality of the class, so it can be executed with one call of a module.
+Combines the main functionality of the class, so it can be executed with one call of a method.
 
 ---
 ---
@@ -559,40 +671,126 @@ Combines the main functionality of the class, so it can be executed with one cal
 Python Class that combines the functionalities of the other classes that need to be applied and makes them available in the User Interface (Jupyter Notebook).
 
 ## Initializing a new instance of the class
+How to create a new instance of the class is shown bellow. In this creation, the specification of the staging_file_name is optional (default = None). 
 ```
 from storingsanalyse import StoringsAnalyse
 
-sa = StoringsAnalyse(project, api_key, object_structure)
+sa = StoringsAnalyse(project, api_key, rapport_type, quarter, year, staging_file_name = None)
 ```
+StoringsAnalyse is a child class of PrepNPlot, meaning it inherits all the attributes and methods from it's parent class (PrepNPlot).
+It will be explicitly mentioned when an attribute or method is overridden by an attribute or method of StoringsAnalyse.
 
 ## Class variables
 A class variable is a variable defined inside a class. When making a new instance of this class, this new instance will also contain this variable.
 
 - **_ld_map_path** - The file path to the file 'location_destination_map.json'. This file is used internally in this class to gather the descriptions belonging to the different SBS and LBS numbers.
+- **_default_file_name_maximo** - The default filename used when saving the raw data received from the maximo server.
 
 ## Class attributes
 - *sa*.metadata - Instance of MetadataStoringsAnalyse().
+- *sa*.project - Name of the given project, obtained from the metadata.  
+- *sa*.project_start_date - Start date of the given project, obtained from the metadata.
+- *sa*.quarter - Quarter of the current analysis.  
+- *sa*.year - Year of the current analysis.
+- *sa*.prev_quarter - The previous quarter, seen from the current quarter.
+- *sa*.prev_year - The previous year, seen from the current year.
+- *sa*.metadata._quarter - The attribute is set for internal use of the quarter in the MetadataStoringsAnalyse().
+- *sa*.metadata._year - The attribute is set for internal use of the year in the MetadataStoringsAnalyse().
+- *sa*.analysis_time_range - The timerange of the analysis.
+- *sa*.analysis_start_date - The start date of the analysis.
+- *sa*.analysis_end_date - The end date of the analysis.
 - *sa*._maximo - Instance of QueryMaximoDatabase().
-- *sa*.response_data - QueryMaximoDatabase().response_data.
-- *sa*.filename_saved_response_data - QueryMaximoDatabase()._default_file_name.
+- *sa*.response_data - copy of the value of QueryMaximoDatabase.response_data in StoringsAnalyse.
+- *sa*.filename_saved_response_data - The filename of the saved maximo response data (default = None and is set by method *sa*.save_maximo_response_data()).
 - *sa*.staging_file_name - Name of the staging file.
-- *sa*.staging_file_path - Path to the staging file.
-- *sa*.staging_file_data - Data from the staging file.
-- *sa*.meldingen - All the notifications obtained through the use of QueryMaximoDatabase().
-- *sa*.storingen - All the notifications with type 'storing' obtained through the use of QueryMaximoDatabase().
-- *sa*.project - Name of the given project, obtained from the metadata.
-- *sa*.start_date - Start date of the given project, obtained from the metadata.
+- *sa*.meldingen - All the notifications obtained through the use of class QueryMaximoDatabase (default = None and is set by *sa*.split_staging_file()).
+- *sa*.storingen - All the notifications with type 'storing' obtained through the use of class QueryMaximoDatabase (default = None and is set by *sa*.split_staging_file()).
+- *sa*.staging_file_path - Path to the staging file (default = None and is set by *sa*.init_staging_file()).
+- *sa*.staging_file_data - Data from the staging file (default = None and is set by *sa*.init_staging_file()).
+- *sa*.rapport_type - Specification if the rapport is a quarterly analysis or a yearly analysis.
+- *sa*.graphs - An attribute to hold all the graphs that are created.
 
 IMPORTANT - note that *sa*.metadata.meldingen() and *sa*.meldingen give two different results. Same goes for *sa*.metadata.storingen() and *sa*.storingen.
 
-## Class modules
-### *sa*.get_maximo_export(query=None)
-See *qmdb*.get_response_data(query=None).
+## Class methods
+### *sa*.return_ntype_staging_file_object(ntype)
+Returns a pandas.DataFrame object containing records with the specified notification type (ntype).
+
+#### Parameters
+- **ntype** - The notification type that is needed to be isolated (options are 'meldingen', 'stroingen', 'onterecht',
+  'preventief', 'incident').
+---
+### *sa*.get_min_max_month(notificaions_groupby_month, min_max)
+Returns a list with the names of the month or months that correspond to the maximum or minimum number of notifications.
+
+#### Parameters
+- **notifications_groupby_month** - a dictionary of the notifications grouped by the month in which they were reported.
+- **min_max** - Specification of if the returned value needs to be the minimum or maximum (using 'min' or 'max').
+---
+### *sa*.get_time_range()
+Method that returns the time range of the current quarter. It returns it in the form of and start and end datetime 
+object in a list. 
+
+#### Parameters
+None
 
 ---
-### *sa*.save_maximo_export(query=None)
-See *qmdb*.save_response_data(filename=_default_file_name, query=None).
+### *sa*._get_time_range(quarter)
+Method that returns the time range of a given quarter. the quarter needs to be specified in the form 'Qx', with x being
+the number of the quarter.
 
+#### Parameters
+- **quarter** - A string representing the one of the four quarters.
+---
+### *sa*.compare_quarters(curr_quarter, prev_quarter)
+Compares the current and previous quarter to see if the previous quarter is at the end of the previous year. This
+method returns true when the previous quarter is larger than the current quarter ('Q4' > 'Q1' -> True ).
+
+#### Parameters
+- **curr_quarter** - The string notation of the current quarter.
+- **prev_quarter** - The string notation of the previous quarter.
+---
+### *sa*.get_time_range_v2(mode)
+Method that returns different time ranges depending on the mode that is specified.
+
+Mode:
+  - 'pc' - Mode returns the time range from beginning previous quarter to end of the current quarter.
+
+#### Parameters
+- **mode** - Mode for retrieving the time range
+
+---
+### *sa*.sbs_patch(project)
+Patch for the different notations of the sbs numbers.
+
+---
+### *sa*.query_maximo_database(site_id, work_type = 'COR')
+Method to query the maximo database. The method builds the query with the use of the site_id and the work type, and 
+*sa*.analysis_time_range. The received response will be saved in the attribute *sa*.response_data.
+
+#### Parameters
+- **site_id** - id code to specify the site of which the data is needed to be received.
+- **work_type** - a short code to specify the type of records that need to be extracted from the database (default = 'COR').
+---
+### *sa*.save_maximo_response_data(filename = _default_file_name_maximo)
+Saves the response data as a .json-file. 
+
+#### Parameters
+- **filename** - The filename of the under which the data is stored (default = _default_file_name_maximo).
+---
+### *sa*.build_query(site_id, report_time, work_type = 'COR')
+Returns a string with the correct query that is needed to extract the data from the maximo database.
+
+#### Parameters
+- **site_id** - id code to specify the site of which the data is needed to be received.
+- **report_time** - A list containing the datetime object of the start date and end date of the analysis.  
+- **work_type** - a short code to specify the type of records that need to be extracted from the database (default = 'COR').
+---
+### *sa*.init_staging_file(staging_file_name = None)
+Method for the initialization steps of the staging_file related attributes.
+
+#### Parameters
+- **staging_file_name** - name of the staging file that is needed to be importen/read (default = None).
 ---
 ### *sa*.build_staging_file(maximo_export_data_filename)
 See *sfb*.build_staging_file().
@@ -608,8 +806,233 @@ Sets *sa*.staging_file_data to a pandas.DataFrame() filled with the data from th
 Splits the staging file in two and sets the correct pandas.Dataframes() to *sa*.meldingen and *sa*.storingen.
 
 ---
-### *sa*.make_frequency_table(di_series)
-Takes a pandas.Series() and returns a frequency table.
+### *sa*.update_meta()
+Method to extend the metadata with the staging_file data. The staging_file name needs to be known before calling this 
+method, otherwise it will raise an error.
 
 ---
+### *sa*._add_graph_for_export(figure)
+Method that adds the given figure to the attribute *sa*.graphs.
 
+### Parameters
+- **figure** - The figure object.
+---
+### *sa*.plot(input_data, plot__type, category_labels, bin_labels, title, show_plot = False)
+This method overrides PrepNPlot.plot().
+Method that combines the method PrepNPlot.plot() with *sa*._add_graph_for_export()
+
+---
+### *sa*.plot_summary(x_labels, data, title, show_plot = False)
+This method overrides PrepNPlot.plot_summary().
+Method that combines the method PrepNPlot.plot_summary() with *sa*._add_graph_for_export()
+
+---
+### *sa*.export_graphs(filename)
+Method that create a pdf-file containing the graphs added to *sa*.graphs
+
+#### Parameters
+- **filename** - The filename of the saved file.
+---
+---
+# Class DocumentGenerator
+Python class on top of StoringsAnalyse, dedicated to generating the text document and appendix.
+
+## Initializing a new instance of the class
+How to create a new instance of the class is shown bellow. In this creation, the specification of the staging_file_name 
+is optional (default = None).
+```
+from document_generator import DocumentGenerator
+
+dg = DocumentGenerator(project, rapport_type, quarter, year, api_key, staging_file_name = None)
+```
+
+## Class variables
+This class doesn't have any class variables.
+
+## Class attributes
+- *dg*.sa - Instance of StornigsAnalyse().
+- *dg*.newline - Pre-defined string for a new line.
+- *dg*.tab - Pre-defined string for ra tab.
+- *dg*._default_export_file_name - The pre-defined file name for the text document.
+- *dg*._default_export_file_name_appendix - The pre-defined file name for the appendix.
+- *dg*._default_export_location - The pre-defined path to the folder where the documents need to be stored.
+
+## Class methods
+### *dg*.build_table_docx(docx_object, header, row_data)
+Method that builds a table in the input docx_object, using the headers as column names and the row_data as data to fill
+the table.
+
+#### Parameters
+- **docx_object** - The docx_object to which all the text is added.
+- **headers** - A tuple containing the column names, in order.
+- **row_data** - Data of the rows.
+---
+### *dg*.del_old_export()
+Deletes an older file from a previous export.
+
+#### Parameters
+None
+
+---
+### *dg*.get_aantal_per_maand(ntype)
+Returns the amount of notifications for each month of the specified notification type.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident'.
+---
+### *dg*.build_text_aantal_per_maand(input_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.get_quarter_comparison(ntype)
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident'.
+---
+### *dg*.build_quarter_comparison(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.get_aantal_per_subsystem(ntype, threshold)
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident'.
+- **threshold** - Value of the minimum amount of totifications needed to be added in the text.
+---
+### *dg*.build_text_aantal_per_subsysteem(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.get_aantal_per_subsysteem(ntype, threshold)
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident'.
+- **threshold** - Value of the minimum amount of totifications needed to be added in the text.
+---
+### *dg*.build_text_aantal_per_subsysteem(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.build_conclusie_algemeen_intro()
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+None
+
+---
+### *dg*.get_poo_table_data_md(poo_type)
+Retrieves/collects the data for the poo table in a way that is compatible wit the method that builds the markdown 
+style table. Method returns a data_dict.
+
+#### Parameters
+- **poo_type** - The type of POO data which applies to the text. Options are: 'probleem', 'oorzaak' and 'oplossing'.
+---
+### *dg*.get_poo_table_data_v2(poo_type)
+Retrieves/collects the data for the poo table in a way that is compatible wit the method that builds the docx style 
+table.
+
+#### Parameters
+- **poo_type** - The type of POO data which applies to the text. Options are: 'probleem', 'oorzaak' and 'oplossing'.
+---
+### *dg*.build_poo_type_table(input_data, docx_object)
+Method that builds a POO table in the input docx_object, using the headers as column names and the row_data as data 
+to fill the table.
+
+#### Parameters
+- **docx_object** - The docx_object to which all the text is added.
+- **input_data** - Data of the rows.
+---
+### *dg*.get_aantal_per_subsysteem_per_maand(threshold, ntype = 'storingen')
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident' 
+  (default = 'storingen').
+- **threshold** - Value of the minimum amount of totifications needed to be added in the text.
+---
+### *dg*.build_aantal_per_subsysteem_per_maand(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.get_asset_meeste_ntype_algemeen(threshold, ntype = 'meldingen')
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident' 
+  (default = 'meldingen').
+- **threshold** - Value of the minimum amount of totifications needed to be added in the text.
+---
+### *dg*.build_asset_meeste_ntype_algemeen(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.get_asset_meeste_ntype_algemeen_v2(threshold, ntype = 'meldingen')
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident' 
+  (default = 'meldingen').
+- **threshold** - Value of the minimum amount of totifications needed to be added in the text.
+---
+### *dg*.build_asset_meeste_ntype_algemeen_v2(input_data, docx_object)
+Method that builds a table in the input docx_object, using the headers as column names and the row_data as data 
+to fill the table.
+
+#### Parameters
+- **docx_object** - The docx_object to which all the text is added.
+- **input_data** - Data of the rows.
+---
+### *dg*.get_asset_uitwerking_ntypes(threshold, ntype = 'meldingen')
+Method to calculate the data needed, adds them to a data dictionary and returns this dictionary.
+
+#### Parameters
+- **ntype** - Notification type. Options are: 'meldingen', 'storingen', 'onterecht', 'preventief', and 'incident' 
+  (default = 'meldingen').
+- **threshold** - Value of the minimum amount of notifications needed to be added in the text.
+---
+### *dg*.build_asset_uitwerking_ntypes(input_data_dict)
+Returns a multiline string containing the text that needs to be added.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+---
+### *dg*.build_asset_uitwerking_ntypes_v2(input_dict, docx_paragraph_object, docx_object)
+The version 2 method combines the calculation of the data and writing the data to the docx_object.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text. 
+- **docx_paragraph_object** - A paragraph object specific to the python-docx package.
+- **docx_object** - The docx_object to which all the text is added.
+
+### *dg*.build_asset_conclusie(input_dict)
+Method to generate the text.
+
+#### Parameters
+- **input_data_dict** - A dictionary containing the different data that is needed to generate the text.
+
+### *dg*.build_full_document(threshold = 3)
+Method for building the whole text document.
+
+#### Parameters
+- **threshold** - Value of the minimum amount of notifications needed to be added in the text (default = 3).
+
+### *dg*.build_appendix(threshold = 0)
+Method for building the appendix document.
+
+#### Parameters
+- **threshold** - Value of the minimum amount of notifications needed to be added in the appendix (default = 0).
