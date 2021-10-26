@@ -94,7 +94,7 @@ class StoringsAnalyse(PrepNPlot):
         self.rapport_type = rapport_type
         self.graphs = []
 
-        self.update_meta()
+        # self.update_meta()
 
     """
     Managing methods -- methods that fulfill some specific general task

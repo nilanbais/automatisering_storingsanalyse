@@ -579,12 +579,12 @@ class DocumentGenerator:
         meldingen_per_maand.add_run("Aantal meldingen per maand").bold = True
         meldingen_per_maand.add_run(self.build_text_aantal_per_maand(self.get_aantal_per_maand(ntype='meldingen')))
         meldingen_per_maand.add_run(self.build_quarter_comparison(self.get_quarter_comparison(ntype='meldingen')))
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         meldingen_per_subsysteem = doc.add_paragraph("")
         meldingen_per_subsysteem.add_run("Aantal meldingen per subsysteem").bold = True
         meldingen_per_subsysteem.add_run(self.build_text_aantal_per_subsysteem(self.get_aantal_per_subsysteem(ntype='meldingen', threshold=threshold)))
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Aantal storingen", level=2)
 
@@ -592,12 +592,12 @@ class DocumentGenerator:
         storingen_per_maand.add_run("Aantal storingen per maand").bold = True
         storingen_per_maand.add_run(self.build_text_aantal_per_maand(self.get_aantal_per_maand(ntype='storingen')))
         storingen_per_maand.add_run(self.build_quarter_comparison(self.get_quarter_comparison(ntype='storingen')))
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         storingen_per_subsysteem = doc.add_paragraph("")
         storingen_per_subsysteem.add_run("Aantal storingen per subsysteem").bold = True
         storingen_per_subsysteem.add_run(self.build_text_aantal_per_subsysteem(self.get_aantal_per_subsysteem(ntype='storingen', threshold=threshold)))
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Conclusie/Aanbeveling", level=1)
         doc.add_heading("Algemeen", level=2)
@@ -628,7 +628,7 @@ class DocumentGenerator:
         conclusie_algemeen.add_run(self.build_conclusie_algemeen_intro())
         conclusie_algemeen.add_run(self.newline)
         conclusie_algemeen.add_run(self.newline)
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Probleem", level=2)
         self.build_poo_type_table(input_data=self.get_poo_table_data_v2(poo_type='probleem'),
@@ -647,14 +647,14 @@ class DocumentGenerator:
         storingen_per_subsysteem_per_maand = doc.add_paragraph("")
         storingen_per_subsysteem_per_maand.add_run("Uitwerking per deelinstallatie").bold = True
         storingen_per_subsysteem_per_maand.add_run(self.build_aantal_per_subsysteem_per_maand(self.get_aantal_per_subsysteem_per_maand(threshold=threshold)))
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Assets met de meeste meldingen", level=1)
         doc.add_heading("Algemeen", level=2)
 
         self.build_asset_meeste_ntype_algemeen_v2(self.get_asset_meeste_ntype_algemeen_v2(threshold=threshold),
                                                   docx_object=doc)
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Uitwerking meldingen", level=2)
 
@@ -665,7 +665,7 @@ class DocumentGenerator:
                                               docx_paragraph_object=asset_uitwerking,
                                               docx_object=doc)
 
-        doc.save(_file_name)
+        # doc.save(_file_name)
 
         doc.add_heading("Conclusie", level=2)
 
@@ -673,7 +673,7 @@ class DocumentGenerator:
         # asset_conclusie.add_run("Conclusie").bold = True
         # conclusie_algemeen.add_run(self.newline)
         # conclusie_algemeen.add_run(self.newline)
-        # doc.save(self._default_export_file_name)
+        # doc.save(_file_name)
         asset_conclusie.add_run(self.build_asset_conclusie(self.get_asset_meeste_ntype_algemeen(threshold=threshold)))
         doc.save(_file_name)
 
