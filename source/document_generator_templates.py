@@ -14,14 +14,14 @@ class DocumentGenerator:
         self._default_export_file_name = f"TEST_{self.sa.quarter}_{self.sa.year}_storingsanalyse_tekst.docx"
         self._default_export_file_name_appendix = f"TEST_{self.sa.quarter}_{self.sa.year}_storingsanalyse_bijlage.pdf"
 
-        self.template_folder = "resources/document_templates"
-        self.rendered_document_folder = "resources/temp"
-        self.default_export_location = "documents/generated_documents"
+        self.template_folder = "resources\\document_templates"
+        self.rendered_document_folder = "resources\\temp"
+        self.default_export_location = "documents\\generated_documents"
 
     def create_rendered_document(self, data_package: dict, template_file: str) -> None:
         doc = docxtpl.DocxTemplate(template_file)
         doc.render(data_package)
-        doc.save("{0}/render_{1}".format(self.rendered_document_folder, template_file))
+        doc.save("{0}\\render_{1}".format(self.rendered_document_folder, template_file))
 
     def get_data_h3(self, ntype: str, threshold: int) -> dict:
 
@@ -112,3 +112,14 @@ class DocumentGenerator:
                         }
 
         return data_package
+
+
+def main():
+    dg = DocumentGenerator(project="Coentunnel-tracé",
+                           rapport_type="Kwartaalrapportage",
+                           quarter="Q2",
+                           year="2021",
+                           api_key="bWF4YWRtaW46R21iQ1dlbkQyMDE5")
+    
+    data_package_h3 = dg.get_data_h3(ntype='meldingen', threshold=3)
+    
