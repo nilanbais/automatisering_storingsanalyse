@@ -113,7 +113,7 @@ class StoringsAnalyse(PrepNPlot):
     def _get_ld_file_name(self) -> str:
         return "location_description_map_{}.json".format(self.project.lower().replace(' ', '_'))
     
-    def _get_breakdown_description(self, sbs_lbs: str) -> str:
+    def get_breakdown_description(self, sbs_lbs: str) -> str:
         """
         (!!) deze methode moet nog worden aangepast naar een methode die kijkt naar het project en zo een _ld_map van het specifieke project kan ophalen.
         :param sbs_lbs: 
