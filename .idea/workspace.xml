@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f4e2f23f-2bb5-43ea-ad1a-f19a412a4f42" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/document_templates/h3_analyse_template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/resources/document_templates/h3_analyse_template.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/document_templates/h4_conclusies_template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/resources/document_templates/h4_conclusies_template.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/document_templates/h4_paragraph_subsystems.docx" beforeDir="false" afterPath="$PROJECT_DIR$/resources/document_templates/h4_paragraph_subsystems.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/document_generator_templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/document_generator_templates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/storingsanalyse.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/storingsanalyse.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +24,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
