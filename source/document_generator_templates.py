@@ -7,6 +7,7 @@ from source.storingsanalyse import StoringsAnalyse
 import docxtpl
 import os
 import pandas as pd
+import numpy as np
 
 
 class DocumentGenerator:
@@ -39,6 +40,30 @@ class DocumentGenerator:
             for i in range(1, len(month_list)):
                 month_string += ' en {}'.format(month_list[i])
         return month_string
+
+    def filter_staging_data(self, ntype: str, column_to_filter: str, threshold: int) -> list:
+        """
+        filters the given column of the staging_data and returns a list of objects that is higher or equal to
+        the given threshold.
+        """
+        staging_data_ntype = self.sa.return_ntype_staging_file_object(ntype=ntype)
+        staging_data_grouped = staging_data_ntype[column_to_filter].value_counts()
+
+        objects_to_handle = list()
+        for item in staging_data_grouped.index:
+            if staging_data_grouped[item] < threshold:
+                continue
+            objects_to_handle.append(item)
+
+        return objects_to_handle
+
+    def get_assets_to_handle(self, threshold: int, ntype: str) -> list:
+        assets_to_handle = self.filter_staging_data(ntype=ntype, column_to_filter='asset nummer', threshold=threshold)
+        return assets_to_handle
+
+    def get_subsystems_to_handle(self, threshold: int, ntype: str) -> list:
+        subsystems_to_handle = self.filter_staging_data(ntype=ntype, column_to_filter='sbs', threshold=threshold)
+        return subsystems_to_handle
     
     def get_data_h3(self, ntype: str, threshold: int) -> dict:
 
@@ -265,17 +290,100 @@ class DocumentGenerator:
 
         return data_package
 
-    def get_subsystems_to_handle(self, threshold: int, ntype: str) -> list:
+    def get_data_h5_algemeen(self, threshold: int, ntype: str = 'meldingen') -> dict:
         staging_data_ntype = self.sa.return_ntype_staging_file_object(ntype=ntype)
-        staging_data_groupby_sbs = staging_data_ntype['sbs'].value_counts()
+        staging_data_groupby_asset = staging_data_ntype['asset nummer'].value_counts(dropna=False).to_dict()
 
-        subsystems_to_handle = list()
-        for sbs in staging_data_groupby_sbs.index:
-            if staging_data_groupby_sbs[sbs] < threshold:
+        total_notifications = sum(staging_data_groupby_asset.values())
+
+        asset_descriptions = {staging_data_ntype['asset nummer'][index]: staging_data_ntype['asset beschrijving'][index]
+                              for index in range(staging_data_ntype.shape[0])}
+
+        nan_notifications = 0
+        assets_to_handle = dict()
+        for key, value in staging_data_groupby_asset.items():
+            if key is np.NaN:
+                nan_notifications = value
                 continue
-            subsystems_to_handle.append(sbs)
+            elif value >= threshold:
+                assets_to_handle[key] = value
 
-        return subsystems_to_handle
+        assets_to_handle_count = len(assets_to_handle)
+
+        rows_to_process = list()
+        for asset in list(assets_to_handle.keys()):
+            sbs_number = staging_data_ntype['sbs'][staging_data_ntype['asset nummer'] == asset].unique()[0]  # returns one number
+            sbs_name = self.sa.get_breakdown_description(sbs_lbs=str(sbs_number))
+
+            asset_description = asset_descriptions[asset]
+
+            notification_count = assets_to_handle[asset]
+
+            row = {"sbs_name": str(sbs_name),
+                   "asset_description": str(asset_description),
+                   "notification_count": str(notification_count)}
+            rows_to_process.append(row)
+
+        data_package = {"ntype": str(ntype),
+                        "threshold": str(threshold),
+                        "current_q": str(self.sa.quarter),
+                        "current_year": str(self.sa.year),
+                        "nan_notifications": str(nan_notifications),
+                        "total_notifications": str(total_notifications),
+                        "assets_to_handle_count": str(assets_to_handle_count),
+                        "rows_to_process": rows_to_process,
+                        }
+
+        return data_package
+
+    def get_data_h5_uitwerking_melding(self, asset_number: str, ntype: str = 'meldingen') -> dict:
+        staging_data_ntype = self.sa.return_ntype_staging_file_object(ntype=ntype)
+        poo_beschrijvingen = self.sa.metadata.contract_info()['POO_codes']
+
+        asset_description = staging_data_ntype['asset beschrijving'][staging_data_ntype['asset nummer'] == asset_number].unique()[0]  # returns one number
+
+        asset_notifications = staging_data_ntype[staging_data_ntype['asset nummer'] == asset_number]
+        notification_count = asset_notifications.shape[0]
+
+        rows_to_process = list()
+        _asset_notification_dict = asset_notifications.to_dict()  # to enhance readability
+        for idx in list(asset_notifications.index):
+            workorder = _asset_notification_dict['werkorder'][idx]
+            notification_type = _asset_notification_dict['type melding (Storing/Incident/Preventief/Onterecht)'][idx]
+            problem_text = poo_beschrijvingen[_asset_notification_dict['probleem code'][idx]]
+            cause_text = poo_beschrijvingen[_asset_notification_dict['oorzaak code'][idx]]
+            solution_text = poo_beschrijvingen[_asset_notification_dict['oplossing code'][idx]]
+
+            row_content = {"workorder": workorder,
+                           "notification_type": notification_type,
+                           "problem_text": problem_text,
+                           "cause_text": cause_text,
+                           "solution_text": solution_text}
+            rows_to_process.append(row_content)
+
+        data_package = {"ntype": ntype,
+                        "asset_description": str(asset_description),
+                        "notification_count": str(notification_count),
+                        "rows_to_process": rows_to_process}
+        return data_package
+
+    def get_data_h5_conclusie(self, threshold: int, ntype: str = 'meldingen') -> dict:
+        staging_data_ntype = self.sa.return_ntype_staging_file_object(ntype=ntype)
+
+        # Onderstaand stuk is gekopieerd -> maak uiteindelijk een aparte method ervan
+        staging_data_groupby_asset = staging_data_ntype['asset nummer'].value_counts(dropna=False).to_dict()
+        assets_to_handle = dict()
+        for key, value in staging_data_groupby_asset.items():
+            if key is np.NaN:
+                continue
+            elif value >= threshold:
+                assets_to_handle[key] = value
+        assets_to_handle_count = len(assets_to_handle)
+
+        data_package = {"threshold": threshold,
+                        "assets_to_handle_count": assets_to_handle_count}
+
+        return data_package
 
 
 def main():
@@ -286,15 +394,22 @@ def main():
                            api_key="bWF4YWRtaW46R21iQ1dlbkQyMDE5",
                            staging_file_name='validating_input_data.xlsx')
 
+    assets_uitwerking = dg.get_assets_to_handle(threshold=3, ntype='meldingen')
+    data_package = dg.get_data_h5_uitwerking_melding(asset_number=assets_uitwerking[0])
+    print(data_package)
+    dg.create_rendered_document(data_package=data_package,
+                                template_file='h5_uitwerking_melding_template.docx',
+                                addition_to_filename=assets_uitwerking[0])
+
     # data_package_h4 = dg.get_data_h4_subsystem(subsystem=13)
     # dg.create_rendered_document(data_package=data_package_h4, template_file='h4_paragraph_subsystems.docx')
 
-    subsystems_to_handle = dg.get_subsystems_to_handle(threshold=3, ntype='meldingen')
-    for subsystem in subsystems_to_handle:
-        data_package = dg.get_data_h4_subsystem(subsystem=subsystem)
-        dg.create_rendered_document(data_package=data_package,
-                                    template_file='h4_paragraph_subsystems.docx',
-                                    addition_to_filename=subsystem)
+    # subsystems_to_handle = dg.get_subsystems_to_handle(threshold=3, ntype='meldingen')
+    # for subsystem in subsystems_to_handle:
+    #     data_package = dg.get_data_h4_subsystem(subsystem=subsystem)
+    #     dg.create_rendered_document(data_package=data_package,
+    #                                 template_file='h4_paragraph_subsystems.docx',
+    #                                 addition_to_filename=subsystem)
 
 
 if __name__ == '__main__':
