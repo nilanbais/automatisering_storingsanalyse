@@ -29,7 +29,7 @@ from source.python_packages.prepnplot import PrepNPlot
 
 from pandas import DataFrame
 from matplotlib.figure import Figure
-from typing import List
+from typing import List, Union
 from datetime import datetime, timedelta
 from calendar import monthrange
 
@@ -222,6 +222,19 @@ class StoringsAnalyse(PrepNPlot):
         else:
             raise ValueError("Please specify the correct mode for calulating the time range")
 
+    # todo: toevoegen aan documentatie
+    def get_previous_quarter_q_year(self, quarter: str, year: Union[str, int]) -> tuple:
+        """
+
+        """
+        _year = int(year) if isinstance(year, str) else year
+        previous_quarter = self.quarter_sequence.get_prev_val(value=quarter)
+        if self.compare_quarters(curr_quarter=quarter, prev_quarter=previous_quarter):
+            _year -= 1
+
+        return previous_quarter, str(_year)
+
+
     """
     Patch methods -- methods that make adjustments that are easier/faster to change in a patch than to solve in source
     """
@@ -393,11 +406,12 @@ def main():
                          year="2021",
                          api_key="bWF4YWRtaW46R21iQ1dlbkQyMDE5")
 
-    time_range = sa.get_time_range_v2(mode='pc')
+    time_range = sa.get_previous_quarter_year(quarter=sa.quarter, year=sa.year)
     print(time_range)
 
 
 if __name__ == '__main__':
+    print(os.getcwd())
     os.chdir('..')
     main()
 
