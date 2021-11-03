@@ -71,6 +71,9 @@ class DocumentGenerator:
         staging_file_data = self.sa.return_ntype_staging_file_object(ntype=ntype)
         meta_data_ntype = self.sa.metadata.return_ntype_meta_object(ntype=ntype)
 
+        previous_quarter_q, previous_quarter_year = self.sa.get_previous_quarter_q_year(quarter=self.sa.quarter,
+                                                                                        year=self.sa.year)
+
         total_notifications = len(staging_file_data)
 
         staging_file_data_groupby_month = staging_file_data['month_number'].value_counts()
@@ -104,8 +107,8 @@ class DocumentGenerator:
         bool_diff_year_negative = True if difference_curr_year_prev_year < 0 else False
 
         # Aantal ntype in voorgaande q
-        monthlist = self.sa.metadata.get_keys(dictionary=meta_data_ntype, containing_quarter=[self.sa.prev_quarter],
-                                              containing_year=[self.sa.prev_year])
+        monthlist = self.sa.metadata.get_keys(dictionary=meta_data_ntype, containing_quarter=[previous_quarter_q],
+                                              containing_year=[previous_quarter_year])
         ntype_gefilterd = self.sa.metadata.filter_dictionary_keys(dictionary=meta_data_ntype, keys=monthlist)
         total_notifications_prev_q = self.sa.metadata.sum_values(ntype_gefilterd)
 
@@ -149,9 +152,10 @@ class DocumentGenerator:
                         "ntype_storingen": ntype_storingen,  # boolean
                         "start_date_project": str(self.sa.project_start_date),
                         "q_current": str(self.sa.quarter),
-                        "q_prev": str(self.sa.prev_quarter),
                         "year_current": str(self.sa.year),
                         "year_prev": str(self.sa.prev_year),
+                        "previous_quarter_q": str(previous_quarter_q),
+                        "previous_quarter_year": str(previous_quarter_year),
                         "threshold": str(threshold),
                         "total_notifications": str(total_notifications),
                         "month_name_highest": str(month_max_notifications),
@@ -169,10 +173,10 @@ class DocumentGenerator:
                         "count_incident": str(count_incident),
                         "count_onterecht": str(count_onterecht),
                         "total_notifications_prev_year": str(total_notifications_prev_year),
-                        "difference_curr_year_prev_year": str(difference_curr_year_prev_year),
+                        "difference_curr_year_prev_year": str(abs(difference_curr_year_prev_year)),
                         "difference_year_negative": bool_diff_year_negative,  # boolean
                         "total_notifications_prev_q": str(total_notifications_prev_q),
-                        "difference_curr_q_prev_q": str(difference_curr_q_prev_q),
+                        "difference_curr_q_prev_q": str(abs(difference_curr_q_prev_q)),
                         "difference_q_negative": bool_diff_q_negative,  # boolean
                         "quarterly_avg_from_meta": str(quarterly_avg_from_meta),
                         "rows_to_process": rows_to_process,
@@ -385,6 +389,26 @@ class DocumentGenerator:
 
         return data_package
 
+    def build_text_document(self, threshold: int) -> None:
+        data_package_h3 = {"h3_paragraphs": [self.get_data_h3(ntype=type, threshold=threshold)
+                                             for type in ['meldingen', 'storingen']]}
+
+        data_package_h4 = {"algemeen_h4": self.get_data_h4_conclusie(),
+                           "subsystems_to_process": [self.get_data_h4_subsystem(subsystem=subsystem, ntype='storingen')
+                                                     for subsystem in self.get_subsystems_to_handle(threshold=threshold,
+                                                                                                    ntype='storingen')]}
+
+        data_package_h5 = {"algemeen_h5": self.get_data_h5_algemeen(threshold=threshold),
+                           "assets_to_process": [self.get_data_h5_uitwerking_melding(asset_number=asset)
+                                                 for asset in self.get_assets_to_handle(threshold=threshold,
+                                                                                        ntype='meldingen')],
+                           "conclusie_h5": self.get_data_h5_conclusie(threshold=3)}
+
+        storingsanalyse_data_package = {**data_package_h3, **data_package_h4, **data_package_h5}
+
+        self.create_rendered_document(data_package=storingsanalyse_data_package,
+                                      template_file='storingsanalyse_template.docx')
+
 
 def main():
     dg = DocumentGenerator(project="Coentunnel-tracé",
@@ -394,22 +418,7 @@ def main():
                            api_key="bWF4YWRtaW46R21iQ1dlbkQyMDE5",
                            staging_file_name='validating_input_data.xlsx')
 
-    assets_uitwerking = dg.get_assets_to_handle(threshold=3, ntype='meldingen')
-    data_package = dg.get_data_h5_uitwerking_melding(asset_number=assets_uitwerking[0])
-    print(data_package)
-    dg.create_rendered_document(data_package=data_package,
-                                template_file='h5_uitwerking_melding_template.docx',
-                                addition_to_filename=assets_uitwerking[0])
-
-    # data_package_h4 = dg.get_data_h4_subsystem(subsystem=13)
-    # dg.create_rendered_document(data_package=data_package_h4, template_file='h4_paragraph_subsystems.docx')
-
-    # subsystems_to_handle = dg.get_subsystems_to_handle(threshold=3, ntype='meldingen')
-    # for subsystem in subsystems_to_handle:
-    #     data_package = dg.get_data_h4_subsystem(subsystem=subsystem)
-    #     dg.create_rendered_document(data_package=data_package,
-    #                                 template_file='h4_paragraph_subsystems.docx',
-    #                                 addition_to_filename=subsystem)
+    dg.build_text_document(threshold=3)
 
 
 if __name__ == '__main__':
