@@ -234,7 +234,6 @@ class StoringsAnalyse(PrepNPlot):
 
         return previous_quarter, str(_year)
 
-
     """
     Patch methods -- methods that make adjustments that are easier/faster to change in a patch than to solve in source
     """
