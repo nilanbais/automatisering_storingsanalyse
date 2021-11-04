@@ -409,6 +409,214 @@ class DocumentGenerator:
         self.create_rendered_document(data_package=storingsanalyse_data_package,
                                       template_file='storingsanalyse_template.docx')
 
+    def build_appendix(self, path_to_folder: str = "", threshold: int = 0):
+        print('Creating file ' + self._default_export_file_name_appendix)
+
+        _file_name = os.path.join(path_to_folder, self._default_export_file_name_appendix)
+
+        #
+        # Aantal meldingen per deelinstallatie
+        #
+        title = 'Aantal meldingen per deelinstallatie'
+        df = self.sa.return_ntype_staging_file_object(ntype='meldingen')
+        time_range = [min(df['rapport datum']), max(df['rapport datum'])]
+        available_categories = self.sa.metadata.contract_info()['aanwezige_deelinstallaties']
+
+        categories, prepped_data = self.sa.prep(df, time_range, available_categories,
+                                                time_key='rapport datum', category_key='sbs')
+
+        readable_labels = [self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names]
+        self.sa.plot(input_data=prepped_data, plot_type='stacked',
+                     category_labels=categories, bin_labels=readable_labels, title=title)
+
+        summary_data = self.sa.prep_summary(df, time_range, available_categories, time_key='rapport datum',
+                                            category_key='sbs')
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Aantal storingen per deelinstallatie
+        #
+        title = 'Aantal storingen per deelinstallatie'
+        df = self.sa.return_ntype_staging_file_object(ntype='storingen')
+
+        categories, prepped_data = self.sa.prep(df, time_range, available_categories,
+                                                time_key='rapport datum', category_key='sbs')
+
+        # needed to cover 'nan', else ValueError: shape mismatch: objects cannot be broadcast to a single shape
+        readable_labels = [self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names]
+        self.sa.plot(input_data=prepped_data, plot_type='stacked',
+                     category_labels=categories, bin_labels=readable_labels,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(df, time_range, available_categories, time_key='rapport datum',
+                                            category_key='sbs')
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Aantal onterechte meldingen per deelinstallatie
+        #
+        title = 'Aantal onterechte meldingen per deelinstallatie'
+        df = self.sa.return_ntype_staging_file_object(ntype='onterecht')
+
+        categories, prepped_data = self.sa.prep(df, time_range, available_categories,
+                                                time_key='rapport datum', category_key='sbs')
+
+        readable_labels = [self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names]
+
+        self.sa.plot(input_data=prepped_data, plot_type='stacked',
+                     category_labels=categories, bin_labels=readable_labels,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(df, time_range, available_categories, time_key='rapport datum',
+                                            category_key='sbs')
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Totaal aantal meldingen preventief per deelinstallatie
+        #
+        title = 'Totaal aantal preventieve meldingen per deelinstallatie'
+        df = self.sa.return_ntype_staging_file_object(ntype='preventief')
+
+        categories, prepped_data = self.sa.prep(df, time_range, available_categories,
+                                                time_key='rapport datum', category_key='sbs')
+
+        readable_labels = [self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names]
+
+        self.sa.plot(input_data=prepped_data, plot_type='stacked',
+                     category_labels=categories, bin_labels=readable_labels,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(df, time_range, available_categories, time_key='rapport datum',
+                                            category_key='sbs')
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Aantal incidenten per deelinstallatie
+        #
+        title = 'Aantal incidenten per deelinstallatie'
+        df = self.sa.return_ntype_staging_file_object(ntype='incident')
+
+        categories, prepped_data = self.sa.prep(df, time_range, available_categories,
+                                                time_key='rapport datum', category_key='sbs')
+
+        readable_labels = [self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names]
+
+        self.sa.plot(input_data=prepped_data, plot_type='stacked',
+                     category_labels=categories, bin_labels=readable_labels,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(df, time_range, available_categories, time_key='rapport datum',
+                                            category_key='sbs')
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        # todo: tijden dynamisch maken
+        # Vergelijking voorgaande kwartaal met huidinge kwartaal
+        #
+        # Meldingen
+        #
+        title = 'SPECIFICEER TITEL'
+        categories, prepped_data = self.sa.prep(self.sa.metadata.unsaved_updated_meta['meldingen'],
+                                                time_range=['10-2020', '03-2021'],
+                                                available_categories=available_categories,
+                                                time_key='rapport datum',
+                                                category_key='sbs',
+                                                bin_size='quarter')
+
+        self.sa.plot(input_data=prepped_data,
+                     plot_type='side-by-side',
+                     category_labels=categories,
+                     bin_labels=self.sa.last_seen_bin_names,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(self.sa.metadata.unsaved_updated_meta['meldingen'],
+                                            time_range=['10-2020', '03-2021'],
+                                            available_categories=available_categories,
+                                            bin_size='quarter')
+
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Storingen
+        #
+        title = 'SPECIFICEER TITEL'
+        categories, prepped_data = self.sa.prep(self.sa.metadata.unsaved_updated_meta['storingen'],
+                                                time_range=['10-2020', '03-2021'],
+                                                available_categories=available_categories,
+                                                time_key='rapport datum',
+                                                category_key='sbs',
+                                                bin_size='quarter')
+
+        self.sa.plot(input_data=prepped_data,
+                     plot_type='side-by-side',
+                     category_labels=categories,
+                     bin_labels=self.sa.last_seen_bin_names,
+                     title=title)
+
+        summary_data = self.sa.prep_summary(self.sa.metadata.unsaved_updated_meta['storingen'],
+                                            time_range=['10-2020', '03-2021'],
+                                            available_categories=available_categories,
+                                            bin_size='quarter')
+
+        self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                             data=list(summary_data.values()),
+                             title=title)
+
+        #
+        # Verdeling type meldingen per deelinstallatie
+        #
+        title = 'Verdeling type meldingen voor DI {}'
+        df = self.sa.return_ntype_staging_file_object(ntype='meldingen')
+        df_groupby_sbs = df.groupby(['sbs'])
+
+        # unieke types vastlegen
+        unique_types = df.loc[:, 'type melding (Storing/Incident/Preventief/Onterecht)'].unique()
+
+        # cols kan voor een sandbox tool variabel gemaakt worden.
+        cols = ['type melding (Storing/Incident/Preventief/Onterecht)', 'month_number']
+
+        sbs_count = df.loc[:, 'sbs'].value_counts()
+        to_process = [x for x in sbs_count.index if sbs_count.at[x] >= threshold]
+        for di_num in to_process:
+            categories, prepped_data = self.sa.prep(df_groupby_sbs.get_group(di_num),
+                                                    time_range=['10-2020', '03-2021'],
+                                                    available_categories=unique_types,
+                                                    time_key='rapport datum',
+                                                    category_key='type melding (Storing/Incident/Preventief/Onterecht)')
+
+            self.sa.plot(input_data=prepped_data,
+                         plot_type='stacked',
+                         category_labels=categories,
+                         bin_labels=[self.sa.prettify_time_label(label) for label in self.sa.last_seen_bin_names],
+                         title=title.format(di_num))
+
+            summary_data = self.sa.prep_summary(df_groupby_sbs.get_group(di_num),
+                                                time_range=['10-2020', '03-2021'],
+                                                available_categories=unique_types,
+                                                time_key='rapport datum',
+                                                category_key='type melding (Storing/Incident/Preventief/Onterecht)')
+
+            self.sa.plot_summary(x_labels=[self.sa.prettify_time_label(label) for label in summary_data.keys()],
+                                 data=list(summary_data.values()),
+                                 title=title.format(di_num))
+
+        #
+        # Exporting appendix
+        #
+        self.sa.export_graphs(filename=os.path.join(self.default_export_location, _file_name))
+        print('Finished.')
+
 
 def main():
     dg = DocumentGenerator(project="Coentunnel-tracé",
@@ -418,7 +626,7 @@ def main():
                            api_key="bWF4YWRtaW46R21iQ1dlbkQyMDE5",
                            staging_file_name='validating_input_data.xlsx')
 
-    dg.build_text_document(threshold=3)
+    dg.build_appendix(threshold=3)
 
 
 if __name__ == '__main__':
