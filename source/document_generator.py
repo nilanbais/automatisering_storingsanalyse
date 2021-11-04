@@ -687,7 +687,7 @@ class DocumentGenerator:
         title = 'title'
         #
         # Aantal meldingen per deelinstallatie
-        #1
+        #
         df = self.sa.return_ntype_staging_file_object(ntype='meldingen')
         time_range = [min(df['rapport datum']), max(df['rapport datum'])]
         available_categories = self.sa.metadata.contract_info()['aanwezige_deelinstallaties']
