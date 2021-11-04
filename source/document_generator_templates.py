@@ -27,7 +27,7 @@ class DocumentGenerator:
             template_file_name, doc_extention = template_file.split('.')
             save_filename = "{0}\\render_{1}_{2}.{3}".format(self.rendered_document_folder, template_file_name, addition_to_filename, doc_extention)
         else:
-            save_filename = "{0}\\render_{1}".format(self.rendered_document_folder, template_file)
+            save_filename = "{0}\\render_{1}".format(self.rendered_document_folder, self._default_export_file_name)
 
         doc = docxtpl.DocxTemplate(os.path.join(self.template_folder, template_file))
         doc.render(data_package)
