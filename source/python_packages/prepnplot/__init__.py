@@ -169,7 +169,8 @@ class PrepNPlot:
 
         return new_time_range
 
-    def _get_time_range_base(self, time_range: [datetime, datetime]) -> list:
+    @staticmethod
+    def _get_time_range_base(time_range: [datetime, datetime]) -> list:
         """
         Returns a list with all the months between the start and end of the input time range
         :param time_range:
@@ -671,7 +672,7 @@ class PrepNPlot:
         # Stops interactive mode for matplotlib pyplot
         plt.ioff()
 
-        # fig.autofmt_xdate(rotation=45)
+        fig.autofmt_xdate(rotation=45)
 
         plt.show() if show_plot else plt.close()
 
