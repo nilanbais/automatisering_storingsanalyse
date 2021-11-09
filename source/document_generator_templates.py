@@ -15,8 +15,8 @@ class DocumentGenerator:
     def __init__(self, project: str, api_key: str, rapport_type: str, quarter: str, year: str, staging_file_name: str = None) -> None:
         self.sa = StoringsAnalyse(project, api_key, rapport_type, quarter, year, staging_file_name)
 
-        self._default_export_file_name = f"TEST_{self.sa.quarter}_{self.sa.year}_storingsanalyse_tekst.docx"
-        self._default_export_file_name_appendix = f"TEST_{self.sa.quarter}_{self.sa.year}_storingsanalyse_bijlage.pdf"
+        self._default_export_file_name = f"{self.sa.quarter}_{self.sa.year}_storingsanalyse_tekst.docx"
+        self._default_export_file_name_appendix = f"{self.sa.quarter}_{self.sa.year}_storingsanalyse_bijlage.pdf"
 
         self.template_folder = "resources\\document_templates"
         self.rendered_document_folder = "resources\\temp"
