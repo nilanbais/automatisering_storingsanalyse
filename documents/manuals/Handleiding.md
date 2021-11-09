@@ -5,14 +5,14 @@ de weg te wijzen langs de verschillende notebooks die zijn opgebouwd.
 ## Inhoud
 De inhoud van deze handleiding bestaat uit de volgende punten.
 
-1. [Processen](#Processen)
+1. [Processen](#processen)
 
-2. [Genereren van een nieuwe storingsanalyse](#Genereren-van-een-storingsanalyse)
-    1. [Het genereren van een staging file.](#Genereren-van-een-staging-file)
-    2. [Specificeren van het melding type.](#Specificeren-van-het-type-van-de-melding)
-    3. [Genereren van de tekst en bijlage.](#Genereren-van-de-storingsanalyse-bestanden)
-2. [Toevoegen van een nieuw project](#Toevoegen-van-een-nieuw-project)
-3. Verdere ondersteuning (documenten, naslagwerk en/of trainingen)
+2. [Genereren van een nieuwe storingsanalyse](#genereren-van-een-storingsanalyse)
+    1. [Het genereren van een staging file.](#genereren-van-een-staging-file)
+    2. [Specificeren van het melding type.](#specificeren-van-het-type-van-de-melding)
+    3. [Genereren van de tekst en bijlage.](#genereren-van-de-storingsanalyse-bestanden)
+2. [Toevoegen van een nieuw project](#toevoegen-van-een-nieuw-project)
+3. [Verdere ondersteuning](#verdere-ondersteuning)
 
 ## Processen
 In de map `processen` staan een aantal processen. Deze processen worden in onderstaande tabel opgesomd met een korte
@@ -65,14 +65,55 @@ Uploaden is mogelijk volgens de optie **Upload** rechtsboven op het scherm (zie 
 
 ### Genereren van de storingsanalyse bestanden
 Voor het genereren van een staging file is de notebook `storingsanalyse_generator.ipynb` beschikbaar gemaakt in de map 
-`processes/generating_storingsanalyse_documents`. De notebook is aangevuld met de specifieke stappen die doorlopen 
+`processes/3. generating_storingsanalyse_documents`. De notebook is aangevuld met de specifieke stappen die doorlopen 
 moeten worden voor het starten van, en na het uitvoeren van de notebook.
 
 Na het doorlopen van het script, zijn de documenten beschikbaar in de map `documents/generated_documents`. Deze kunnen
-worden gedownload zoals [hier](#Genereren-van-een-staging-file) omschereven.
+worden gedownload zoals [hier](#Genereren-van-een-staging-file) omschreven.
 
 ## Toevoegen van een nieuw project
+Het toevoegen van een nieuw project bestaat uit meerdere handelingen die eenmalig uitgevoerd moeten worden. Deze 
+handelingen zijn:
+   - Het beschikbaar maken van de location_description_map van het specifieke project.
+   - Het genereren van een metadata bestand.
 
+### De location_description_map
+De location_description_map (verder: ld_map) is niet meer dan een bestand waarin de betekenis van de sbs en lbs nummers
+worden gekoppeld aan de beschrijving die op dat project gehanteerd worden. Dit overzicht is gemakkelijk te verkrijgen
+wanneer de koppelingen al in Maximo zijn gerealiseerd. Raadpleeg de Maximo consultant voor het verkrijgen van deze
+data. Daarbij is het belangrijk dat de ld_map wordt opgeslagen in de map 
+`resource/information_mapping/location_description_mapping` én dat de juist naamconventie wordt toegepast. Deze 
+naamconventie is als volgt opgebouwd: `location_description_map` gevolgd door `_` en de naam van het project, volledig
+lower case. Sla het bestand ook altijd op als `.json`.
+Voor het project `Coentunnel-tracé` wordt de naam dan als in het onderstaande voorbeeld:
+```
+location_description_map_coentunnel-tracé.json
+```
+
+### Genereren van het metadata bestand
+Daarbij komt dat er binnen het toevoegen van een nieuw project onderscheid wordt gemaakt tussen twee lijnen:
+   1. Het toevoegen van een project dat al in beheer is.
+   2. Het toevoegen van een project dat nieuw in beheer komt.
+
+Dit onderscheid in lijnen uit zich enkel in het gebruik van een andere notebook voor het genereren van het metadata
+bestand.
+
+#### Het verschill tussen de twee lijnen
+Het grote verschil tussen de twee lijnen is de beschikbaarheid van historische data in het format dat door de
+maintenance engineers is geïntroduceerd. Dit format is een excel document dat, voor deze automatisering, werd gebruikt 
+voor het maken van een storingsanalyse. Een voorbeeld van dit document is te vinden in de map 
+`documents/exaple_documents` als `brondocument_metadata.xlsx`.
+
+#### De werkwijze
+Beide notebooks voor het genereren van het metadata bestand zijn te vinden in de map 
+`processes/1. building_metadata_file`. Zo is de notebook `metadata_file_builder_new_project` voor het genereren van
+een metadata bestand voor een project dat nieuw in het beheer komt, en waar dus de historische data ontbreekt. De 
+notebook `metadata_file_builder.ipynb` wordt gebruikt voor het toevoegen van een project dat al in het beheer is van
+CWD-Infra en waar dus wel historische data van bekend is.
+
+Voor beide documenten geldt dat in de notebook stappen zijn uitgeschreven die uitgevoerd moeten worden om het proces
+uit te voeren en af te ronden, net als bij de eerder besproken notebooks voor de andere processen.
 
 ## Verdere ondersteuning
-HIER BESCHRIJVEN WAT MEN MOET DOEN OM EEN NIEUWE LOCATION_MAPPING TOE TE VOEGEN.
+Voor meer informatie over de backend van de automatisering en de methods die daar beschikbaar zijn, bekijk dan de
+documentatie van de backend (`backend_documentation.md`).
