@@ -222,7 +222,6 @@ class StoringsAnalyse(PrepNPlot):
         else:
             raise ValueError("Please specify the correct mode for calulating the time range")
 
-    # todo: toevoegen aan documentatie
     def get_previous_quarter_q_year(self, quarter: str, year: Union[str, int]) -> tuple:
         """
 
@@ -255,12 +254,10 @@ class StoringsAnalyse(PrepNPlot):
     """
     Database methods -- methods that focus on the interaction with the database (all _maximo related moludes).
     """
-    # Todo: toevoegen aan documentatie
     def check_site_id_value(self) -> None:
         if self._maximo.site_id is None:
             raise ValueError("Site_id can't have value None. Please parse a value for site_id.")
 
-    # Todo: toevoegen aan documentatie
     def get_site_id(self) -> str:
         site_id = StoringsAnalyse._site_id_dict.__getitem__(self.project)
         return site_id
@@ -317,7 +314,6 @@ class StoringsAnalyse(PrepNPlot):
     def set_staging_file_name(self, staging_file_name: str) -> None:
         pass
 
-    # todo: aanpassen in documentatie
     def build_staging_file(self, maximo_export_data_filename: str, export_path: str = None) -> None:
         sfb = StagingFileBuilder(maximo_export_data_filename=maximo_export_data_filename)
         sfb.build_staging_file(export_path=export_path)
