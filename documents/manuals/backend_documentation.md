@@ -690,6 +690,7 @@ A class variable is a variable defined inside a class. When making a new instanc
 - *sa*.metadata - Instance of MetadataStoringsAnalyse().
 - *sa*.project - Name of the given project, obtained from the metadata.  
 - *sa*.project_start_date - Start date of the given project, obtained from the metadata.
+- *sa*._ld_map - Relation map of the sbs/lbs numbers and their description.   
 - *sa*.quarter - Quarter of the current analysis.  
 - *sa*.year - Year of the current analysis.
 - *sa*.prev_quarter - The previous quarter, seen from the current quarter.
@@ -707,12 +708,20 @@ A class variable is a variable defined inside a class. When making a new instanc
 - *sa*.storingen - All the notifications with type 'storing' obtained through the use of class QueryMaximoDatabase (default = None and is set by *sa*.split_staging_file()).
 - *sa*.staging_file_path - Path to the staging file (default = None and is set by *sa*.init_staging_file()).
 - *sa*.staging_file_data - Data from the staging file (default = None and is set by *sa*.init_staging_file()).
+- *sa*.unique_di_numbers_staging_file - A list of the unique subsystem numbers seen in the
 - *sa*.rapport_type - Specification if the rapport is a quarterly analysis or a yearly analysis.
 - *sa*.graphs - An attribute to hold all the graphs that are created.
 
-IMPORTANT - note that *sa*.metadata.meldingen() and *sa*.meldingen give two different results. Same goes for *sa*.metadata.storingen() and *sa*.storingen.
+IMPORTANT - note that *sa*.metadata.meldingen() and *sa*.meldingen give two different results. Same goes for 
+*sa*.metadata.storingen() and *sa*.storingen.
 
 ## Class methods
+### *sa*.get_breakdown_description(sbs_lbs)
+Returns the descriptoin of the given subsystem number.
+
+#### Parameters
+- **sbs_lbs** - a string containing the subsystem number.
+---
 ### *sa*.return_ntype_staging_file_object(ntype)
 Returns a pandas.DataFrame object containing records with the specified notification type (ntype).
 
@@ -758,10 +767,25 @@ Mode:
 
 #### Parameters
 - **mode** - Mode for retrieving the time range
+---
+### *sa*.get_previous_quarter_q_year(quarter, year)
+Returns the previous quarter and the year of the previous quarter. Build to cope with getting the previous values for
+Q1; `'Q1', 2021 -> 'Q4', 2020`.
 
+#### Parameters
+- **quarter** - string notation of the current quarter.
+- **year** - string notation or integer of the current year.
 ---
 ### *sa*.sbs_patch(project)
 Patch for the different notations of the sbs numbers.
+
+---
+### *sa*.check_site_id_value()
+Checks if the site_id is None. If so it returns a ValueError.
+
+---
+### *sa*.get_site_id()
+Retieves the site_id based on the projects specified when initializing the instance of the StoringsAnalyse class
 
 ---
 ### *sa*.query_maximo_database(site_id, work_type = 'COR')
@@ -792,7 +816,7 @@ Method for the initialization steps of the staging_file related attributes.
 #### Parameters
 - **staging_file_name** - name of the staging file that is needed to be importen/read (default = None).
 ---
-### *sa*.build_staging_file(maximo_export_data_filename)
+### *sa*.build_staging_file(maximo_export_data_filename, export_path = None)
 See *sfb*.build_staging_file().
 
 ---
