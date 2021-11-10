@@ -859,3 +859,253 @@ This class doesn't have any class variables.
   documents.
 
 ## Class methods
+### *dg*.create_rendered_document(data_package, template_file, addition_to_filename = "")
+Method that is used for creating a rendered file using a data package, and a template file. The method also has the 
+option of parsing a string that is added to the default file name of the created rendered file.
+
+The default rendered file name:  `render_ + dg._default_export_file_name`.
+
+#### Parameters
+- **data_package** - a dictionary with the placeholders from the template file as keys names, with the coresponing 
+  values as dictionary values.
+- **template_file** - a string specifying the template that has to be used to generate the rendered file.
+- **addition_to_filename** - a string that is added to the end of the rendered file name (default = "").
+---
+### *dg*.month_list_to_string(month_list)
+Method that takes a list like `['April', 'Mei]` and returns the string `'April en Mei'`.
+
+#### Parameters
+- **month_list** - a list containing strings.
+---
+### *dg*.filter_staging_data(ntype, column_to_filter, threshold)
+Method that filters the given column of the staging_data and returns a list of objects that is higher or equal to 
+the given threshold.
+
+#### Parameters
+- **ntype** - the notification type to isolate from the staging data set. If the whole staging data is needed, parse 
+  'meldingen' as ntype.
+- **column_to_filter** - a string containing the column name on which the filtering needs to be done.
+- **threshold** - the threshold value used in the method.
+---
+### *dg*.get_assets_to_handle(threshold, ntype)
+Method build upon `dg.filter_staging_file_data()` to return a list of assets that have more notifications than the 
+given threshold.
+
+#### Parameters
+- **threshold** - the threshold value used in the method.
+- **ntype** - the notification type to isolate from the staging data set. If the whole staging data is needed, parse 
+  'meldingen' as ntype.
+---
+### *dg*.get_subsystems_to_handle(threshold, ntype)
+Method build upon `dg.filter_staging_file_data()` to return a list of subsystems that have more notifications than the 
+given threshold.
+
+#### Parameters
+- **threshold** - the threshold value used in the method.
+- **ntype** - the notification type to isolate from the staging data set. If the whole staging data is needed, parse 
+  'meldingen' as ntype.
+---
+### *dg*.get_data_h3(ntype, threshold)
+Method that retrieves and returns a dictionary representing the data package used to create a render for the first 
+chapter (third chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"ntype"|the given notification type|
+|"ntype_storingen"| a boolean to indicate if ntype is equal to storingen|
+|"start_date_project"| the start dat of the project|
+|"q_current"| the current quarter, given like "Q1"|
+|"year_current"| the current year|
+|"year_prev"| the previous year|
+|"previous_quarter_q"| the previous quarter, given like "Q4"| 
+|"previous_quarter_year"| the year to which the previous quarter belongs|
+|"threshold"| the given threshold|
+|"total_notifications"| the total number of notifications counted|
+|"month_name_highest"| the month name (or names) of the month with the highest notification count seen in the current quarter|
+|"month_name_lowest"| the month name (or names) of the month with the lowest notification count seen in the current quarter|
+|"max_monthly_notifications"| the max count of notifications seen in a month of the current quarter|
+|"multiple_months_max"| a boolean to indicate if there are multiple month with the highest seen count of notifications|
+|"multiple_months_min"| a boolean to indicate if there are multiple month with the lowest seen count of notifications|
+|"min_monthly_notifications"| the min count of notifications seen in a month of the current quarter|
+|"monthly_avg_notifications"| the average number of monthly notification in the current quarter|
+|"count_unique_sbs_numbers"| the number of unique subsystem numbers seen in the dataset|
+|"notifications_unique_sbs_numbers"| the sum of notifications of the unique subsystems|
+|"percentage_unique_sbs_numbers_to_total"| the percentage of the notifications of the unique subsystems in relation to the total number of notifications|
+|"count_storingen"| sum of the records where ntype = 'storingen'|
+|"count_preventief"| sum of the records where ntype = 'preventief'|
+|"count_incident"| sum of the records where ntype = 'incident'|
+|"count_onterecht"| sum of the records where ntype = 'onterecht'|
+|"total_notifications_prev_year"| the total amount of notifications seen in the previous year|
+|"difference_curr_year_prev_year"| the difference in the total number of notifications between the current quarter and same quarter in the previous year|
+|"difference_year_negative"| boolean to indicate if the difference is negative (previous year had more notifications)|
+|"total_notifications_prev_q"| sum of notifications of the previous quarter|
+|"difference_curr_q_prev_q"| the difference in the total number of notifications between the current quarter and previous quarter|
+|"difference_q_negative"| boolean to indicate if the difference is negative (previous quarter had more notifications)|
+|"quarterly_avg_from_meta"| average for each quarter stored in the metadata object|
+|"rows_to_process"| list of dicts that are used to build a table|
+
+The dictionaries in the rows_to_process list is build up as follows.
+
+|Key|Description|
+|---|-----------|
+|"sbs_name"| the name of the subsystem|
+|"count_notifications"| the count of the notifications corresponding the the subsystem name|
+|"percentage"| the percentage of notifications in relation to the total number of notifications|
+
+#### Parameters
+- **ntype** - the notification type to isolate from the staging data set. If the whole staging data is needed, parse 
+  'meldingen' as ntype.
+- **threshold** - the threshold value used in the method.
+---
+### *dg*.get_poo_table_data(poo_string)
+Method that retrieves and returns a list of dictionaries that is used to build the table containing POO data.
+
+The dictionaries in the rows_to_process list is build up as follows.
+
+|Key|Description|
+|---|-----------|
+|"poo_code"| the POO code (like: P01 or C05)|
+|"poo_beschrijving"| the description of the POO code|
+|"poo_count"| number of records woth the POO code|
+|"poo_total"| the total amount of records with the given POO code (from staging data and metadata object)|
+|"poo_avg"| the monthly average of records with the given POO code|
+
+#### Parameters
+- **poo_string** - a string specifying the POO type ('probleem', 'oorzaak', or 'oplossing')
+---
+### *dg*.get_data_h4_conclusie()
+Method that retrieves and returns a dictionary representing the data package used to create a render for the first part
+of the second chapter (fourth chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"orders_without_asset"| the number of records that don't have an asset specified|
+|"p_rows_to_process"| result of `dg.get_poo_table_data(poo_string='probleem')`|
+|"c_rows_to_process"| result of `dg.get_poo_table_data(poo_string='oorzaak')`|
+|"s_rows_to_process"| result of `dg.get_poo_table_data(poo_string='oplossing')`|
+
+#### Parameters
+None
+
+---
+### *dg*.get_data_h4_subsystem(subsystem, ntype = 'storingen')
+Method that retrieves and returns a dictionary representing the data package used to create a render for the second part
+of the second chapter (fourth chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"ntype"|the given notification type|
+|"ntype_storingen"| a boolean to indicate if ntype is equal to storingen|
+|"subsystem_number"| the subsystem number|
+|"subsystem_name"| the name of the subsystem|
+|"q_current"| the current quarter, given like "Q1"|
+|"q_prev"| the previous quarter, given like "Q4"| 
+|"year_current"| the current year|
+|"year_prev"| the previous year|
+|"total_notifications_subsystem"| the total number of notifications related to the specific subsystem|
+|"monthly_avg_notifications_subsystem"| the monthly average of notifications of the given subsystem|
+|"month_name_highest"| the month name (or names) of the month with the highest notification count seen in the current quarter|
+|"month_name_lowest"| the month name (or names) of the month with the lowest notification count seen in the current quarter|
+|"max_monthly_notifications"| the max count of notifications seen in a month of the current quarter|
+|"min_monthly_notifications"| the min count of notifications seen in a month of the current quarter|
+|"multiple_months_max"| a boolean to indicate if there are multiple month with the highest seen count of notifications|
+|"multiple_months_min"| a boolean to indicate if there are multiple month with the lowest seen count of notifications|
+|"quarterly_avg_from_meta_subsystem"| average for each quarter stored in the metadata object of the given subsystem|
+|"monthly_avg_from_meta_subsystem"| monthly average of the data stored in the metadata object of the given subsystem|
+
+#### Parameters
+- **subsystem** - a string containing the number of the subsystem to parse to the method.
+- **ntype** - the notification type to isolate from the staging data set (default = 'storingen'). If the whole staging
+  data is needed, parse 'meldingen' as ntype.
+---
+### *dg*.get_data_h5_algemeen(threshold, ntype = 'storingen')
+Method that retrieves and returns a dictionary representing the data package used to create a render for the first part
+of the third chapter (fifth chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"ntype"|the given notification type|
+|"threshold"| the given threshold value|
+|"current_q"| the current quarter, given like "Q1"|
+|"current_year"| the current year|
+|"nan_notifications"| the number of notifications that don't have a subsystem specified|
+|"total_notifications"| the total number of notifications counted|
+|"assets_to_handle_count"| the number of assets that have a value higher than the threshold|
+|"rows_to_process"| list of dicts that are used to build a table|
+
+The dictionaries in the rows_to_process list is build up as follows.
+
+|Key|Description|
+|---|-----------|
+|"sbs_name"| the name of the subsystem|
+|"asset_description"| the description of the asset|
+|"notification_count"| the count of the notifications corresponding the the subsystem name|
+
+#### Parameters
+- **threshold** - the threshold value used in the method.
+- **ntype** - the notification type to isolate from the staging data set (default = 'storingen'). If the whole 
+  staging data is needed, parse 'meldingen' as ntype.
+---  
+### *dg*.get_data_h5_uitwerking_melding(asset_number, ntype = 'meldingen')
+Method that retrieves and returns a dictionary representing the data package used to create a render for the second part
+of the third chapter (fifth chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"sbs_name"| the name of the subsystem|
+|"asset_description"| the description of the asset|
+|"notification_count"| the count of the notifications corresponding the the subsystem name|
+|"rows_to_process"| list of dicts that are used to build a table|
+
+The dictionaries in the rows_to_process list is build up as follows.
+
+|Key|Description|
+|---|-----------|
+|"workorder"| workorder number|
+|"notification_type"| notification type of the specific workorder|
+|"problem_text"| the POO code problem description|
+|"cause_text"| the POO code cause description|
+|"solution_text"| the POO code solution description|
+
+#### Parameters
+- **asset_number** - a string containing an asset number.
+- **ntype** - the notification type to isolate from the staging data set (default = 'meldingen'). If the whole 
+  staging data is needed, parse 'meldingen' as ntype.
+---
+### *dg*.get_data_h5_conclusie(threshold, ntype = 'meldingen')
+Method that retrieves and returns a dictionary representing the data package used to create a render for the third part
+of the third chapter (fifth chapter in the original document) of the document that needs to be rendered.
+
+The returned data package look as follows.
+
+|Key|Description|
+|---|-----------|
+|"threshold"|  the given threshold value|
+|"assets_to_handle_count"| the number of assets that have a value higher than the threshold|
+
+#### Parameters
+- **threshold** - the threshold value used in the method.
+- **ntype** - the notification type to isolate from the staging data set (default = 'meldingen'). If the whole 
+  staging data is needed, parse 'meldingen' as ntype.
+---
+### *dg*.build_text_document(threshold)
+Method that combines other methods of the class to render a full document.
+
+#### Parameters
+- **threshold** - the threshold value used in the method.
+---
+### *dg*.build_appendix(threshold = 0)
+Method that combines other methods of the class to render the appendix.
+
+#### Parameters
+- **threshold** - the threshold value used in the method (default = 0).
